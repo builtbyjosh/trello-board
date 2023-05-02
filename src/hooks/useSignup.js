@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { auth, storage } from "../firebase/config";
+import { auth, storage, db } from "../firebase/config";
 import { useAuthContext } from "./useAuthContext";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { updateProfile, createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
 export const useSignup = () => {
   const [isCancelled, setIsCancelled] = useState(false);
@@ -35,6 +36,18 @@ export const useSignup = () => {
       // Add display name to user
       // await res.user.updateProfile({ displayName, photoURL: imgUrl });
       await updateProfile(res.user, {
+        displayName,
+        photoURL: imgUrl,
+      });
+
+      // create a user doc
+      // await db.collection('users').doc(res.user.uid).set({
+      //   online: true,
+      //   displayName,
+      //   photoURL: imgUrl
+      // })
+      await setDoc(doc(db, "users", res.user.uid), {
+        online: true,
         displayName,
         photoURL: imgUrl,
       });
