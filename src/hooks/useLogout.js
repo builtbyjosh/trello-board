@@ -1,18 +1,23 @@
 import { useEffect, useState } from "react";
-import { auth } from "../firebase/config";
+import { auth, db } from "../firebase/config";
 import { useAuthContext } from "./useAuthContext";
+import { doc, updateDoc } from "firebase/firestore";
 
 export const useLogout = () => {
   const [isCancelled, setIsCancelled] = useState(false);
   const [error, setError] = useState(null);
   const [isPending, setIsPending] = useState(false);
-  const { dispatch } = useAuthContext();
+  const { dispatch, user } = useAuthContext();
 
   const logout = async () => {
     setError(null);
     setIsPending(true);
 
     try {
+      // set user to offline
+      const { uid } = user;
+      await updateDoc(doc(db, "users", uid), { online: false });
+
       // sign the user out
       await auth.signOut();
 
