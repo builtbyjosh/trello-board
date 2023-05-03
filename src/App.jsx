@@ -8,6 +8,7 @@ import Project from "./pages/project/Project";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import { useAuthContext } from "./hooks/useAuthContext";
+import OnlineUser from "./components/OnlineUser";
 
 function App() {
   const {user, authIsReady} = useAuthContext()
@@ -28,6 +29,7 @@ function App() {
             <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
           </Routes>
         </div>
+        {user && <OnlineUser />}
       </Router>
         )}
     </div>
