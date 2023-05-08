@@ -1,6 +1,6 @@
 import { useReducer, useEffect, useState } from "react";
 import { db, timestamp } from "../firebase/config";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 
 let initialState = {
   document: null,
@@ -76,9 +76,22 @@ export const useFirestore = (collectionName) => {
     }
   };
 
+  // update a document
+  const updateDocument = async (id, updates) => {
+    const docRef = doc(db, collectionName, id);
+
+    try {
+      await updateDoc(docRef, updates);
+      return true;
+    } catch (error) {
+      console.error("Error updating document:", error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     return () => setIsCancelled(true);
   }, []);
 
-  return { addDocument, deleteDocument, response };
+  return { addDocument, deleteDocument, updateDocument, response };
 };

@@ -3,11 +3,11 @@ import "./Project.css";
 import { useDocument } from "../../hooks/useDocument";
 import { useParams } from "react-router-dom";
 import ProjectSummary from "./ProjectSummary";
+import ProjectComment from "./ProjectComments";
 
 const Project = () => {
   const { id } = useParams();
   const { document, error } = useDocument("projects", id);
-  console.log("DOCUMENT: ", document);
 
   if (error) {
     return <div className="error">{error}</div>;
@@ -20,6 +20,7 @@ const Project = () => {
   return (
     <div className="project-details">
       <ProjectSummary project={document} />
+      <ProjectComment project={document} />
     </div>
   );
 };
