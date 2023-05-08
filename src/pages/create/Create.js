@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import Select from "react-select";
 import { useCollection } from "../../hooks/useCollection";
 import "./Create.css";
+import { db, timestamp } from "../../firebase/config";
+import { useAuthContext } from "../../hooks/useAuthContext";
+import { useFirestore } from "../../hooks/useFirestore";
+import { useNavigate } from "react-router-dom";
 
 const categories = [
   { value: "development", label: "Development" },
@@ -13,13 +17,16 @@ const categories = [
 const Create = () => {
   const { documents } = useCollection("users");
   const [users, setUsers] = useState([]);
-
+  const { user } = useAuthContext();
+  const { addDocument, response } = useFirestore("projects");
+  const navigate = useNavigate();
   //form fields
   const [name, setName] = useState("");
   const [details, setDetails] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [category, setCategory] = useState("");
   const [assignedUsers, setAssignedUsers] = useState([]);
+  const [formError, setFormError] = useState(null);
 
   useEffect(() => {
     if (documents) {
@@ -30,9 +37,49 @@ const Create = () => {
     }
   }, [documents]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(name, details, dueDate, category.value, assignedUsers);
+    setFormError(null);
+
+    if (!category) {
+      setFormError("Please select a project category");
+      return;
+    }
+
+    if (assignedUsers.length < 1) {
+      setFormError("Please assign at least 1 user");
+      return;
+    }
+
+    const createdBy = {
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      id: user.uid,
+    };
+
+    const assignedUsersList = assignedUsers.map((user) => {
+      return {
+        displayName: user.value.displayName,
+        photoURL: user.value.photoURL,
+        id: user.value.id,
+      };
+    });
+
+    const project = {
+      name,
+      details,
+      category: category.value,
+      dueDate: timestamp.fromDate(new Date(dueDate)),
+      comments: [],
+      createdBy,
+      assignedUsersList,
+    };
+
+    await addDocument(project);
+    console.log("RESPONSE: ", response);
+    if (!response.error) {
+      navigate("/");
+    }
   };
 
   return (
@@ -82,6 +129,7 @@ const Create = () => {
           />
         </label>
         <button className="btn">Add Project</button>
+        {formError && <p className="error">{formError}</p>}
       </form>
     </div>
   );
