@@ -75,8 +75,9 @@ const Create = () => {
       assignedUsersList,
     };
 
+    console.log("PROJECT: ", project);
     await addDocument(project);
-    console.log("RESPONSE: ", response);
+    console.log("RESONSE:", response);
     if (!response.error) {
       navigate("/");
     }

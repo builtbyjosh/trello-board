@@ -1,6 +1,12 @@
-import { useReducer } from "react";
+import { useReducer, useState, useEffect } from "react";
 import { db, timestamp } from "../firebase/config";
-import { addDoc, updateDoc, doc, deleteDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  deleteDoc,
+} from "firebase/firestore";
 
 let initialState = {
   document: null,
@@ -36,14 +42,26 @@ const firestoreReducer = (state, action) => {
 
 export const useFirestore = (collectionName) => {
   const [response, dispatch] = useReducer(firestoreReducer, initialState);
-  // const [isCancelled, setIsCancelled] = useState(false);
+  const [isCancelled, setIsCancelled] = useState(false);
+
+  // collection ref
+  const ref = collection(db, collectionName);
+  // only dispatch if not cancelled
+
+  const dispatchIfNotCancelled = (action) => {
+    if (!isCancelled) {
+      dispatch(action);
+    }
+  };
 
   // add a document
   const addDocument = async (doc) => {
     try {
       const createdAt = timestamp.fromDate(new Date());
-      await addDoc(db, collectionName, { ...doc, createdAt });
-      return true;
+      addDoc(ref, {
+        ...doc,
+        createdAt,
+      });
     } catch (err) {
       console.error("Error adding document:", err);
       return false;
@@ -52,7 +70,6 @@ export const useFirestore = (collectionName) => {
 
   // delete a document
   const deleteDocument = async (id) => {
-    dispatch({ type: "IS_PENDING" });
     const docRef = doc(db, collectionName, id);
     try {
       await deleteDoc(docRef);
@@ -66,7 +83,6 @@ export const useFirestore = (collectionName) => {
   // update a document
   const updateDocument = async (id, updates) => {
     const docRef = doc(db, collectionName, id);
-
     try {
       await updateDoc(docRef, updates);
       return true;
@@ -76,9 +92,9 @@ export const useFirestore = (collectionName) => {
     }
   };
 
-  // useEffect(() => {
-  //   return () => setIsCancelled(true);
-  // }, []);
+  useEffect(() => {
+    return () => setIsCancelled(true);
+  }, []);
 
   return { addDocument, deleteDocument, updateDocument, response };
 };
