@@ -1,12 +1,6 @@
 import { useReducer, useEffect, useState } from "react";
 import { db, timestamp } from "../firebase/config";
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  doc,
-  deleteDoc,
-} from "firebase/firestore";
+import { addDoc, updateDoc, doc, deleteDoc } from "firebase/firestore";
 
 let initialState = {
   document: null,
@@ -44,29 +38,15 @@ export const useFirestore = (collectionName) => {
   const [response, dispatch] = useReducer(firestoreReducer, initialState);
   const [isCancelled, setIsCancelled] = useState(false);
 
-  // collection ref
-  const ref = collection(db, collectionName);
-
-  // only dispatch is not cancelled
-  const dispatchIfNotCancelled = (action) => {
-    if (!isCancelled) {
-      dispatch(action);
-    }
-  };
-
   // add a document
   const addDocument = async (doc) => {
-    dispatch({ type: "IS_PENDING" });
-
     try {
       const createdAt = timestamp.fromDate(new Date());
-      const addedDocument = await addDoc(ref, { ...doc, createdAt });
-      dispatchIfNotCancelled({
-        type: "ADDED_DOCUMENT",
-        payload: addedDocument,
-      });
+      await addDoc(db, collectionName, { ...doc, createdAt });
+      return true;
     } catch (err) {
-      dispatchIfNotCancelled({ type: "ERROR", payload: err.message });
+      console.error("Error adding document:", err);
+      return false;
     }
   };
 
@@ -76,10 +56,8 @@ export const useFirestore = (collectionName) => {
     const docRef = doc(db, collectionName, id);
     try {
       await deleteDoc(docRef);
-      dispatchIfNotCancelled({ type: "DELETED_DOCUMENT" });
       return true;
     } catch (err) {
-      dispatchIfNotCancelled({ type: "ERROR", payload: "could not delete" });
       console.error("Error deleting document:", err);
       return false;
     }
