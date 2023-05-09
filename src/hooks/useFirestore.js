@@ -1,6 +1,12 @@
 import { useReducer, useEffect, useState } from "react";
 import { db, timestamp } from "../firebase/config";
-import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  deleteDoc,
+} from "firebase/firestore";
 
 let initialState = {
   document: null,
@@ -67,12 +73,15 @@ export const useFirestore = (collectionName) => {
   // delete a document
   const deleteDocument = async (id) => {
     dispatch({ type: "IS_PENDING" });
-
+    const docRef = doc(db, collectionName, id);
     try {
-      await ref.doc(id).delete();
+      await deleteDoc(docRef);
+      return true;
       dispatchIfNotCancelled({ type: "DELETED_DOCUMENT" });
     } catch (err) {
       dispatchIfNotCancelled({ type: "ERROR", payload: "could not delete" });
+      console.error("Error deleting document:", err);
+      return false;
     }
   };
 
