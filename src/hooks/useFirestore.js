@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useState } from "react";
+import { useReducer } from "react";
 import { db, timestamp } from "../firebase/config";
 import { addDoc, updateDoc, doc, deleteDoc } from "firebase/firestore";
 
@@ -36,7 +36,7 @@ const firestoreReducer = (state, action) => {
 
 export const useFirestore = (collectionName) => {
   const [response, dispatch] = useReducer(firestoreReducer, initialState);
-  const [isCancelled, setIsCancelled] = useState(false);
+  // const [isCancelled, setIsCancelled] = useState(false);
 
   // add a document
   const addDocument = async (doc) => {
@@ -76,9 +76,9 @@ export const useFirestore = (collectionName) => {
     }
   };
 
-  useEffect(() => {
-    return () => setIsCancelled(true);
-  }, []);
+  // useEffect(() => {
+  //   return () => setIsCancelled(true);
+  // }, []);
 
   return { addDocument, deleteDocument, updateDocument, response };
 };
