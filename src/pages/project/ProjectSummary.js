@@ -1,11 +1,29 @@
 import React from "react";
 import Avatar from "../../components/Avatar";
+import { useFirestore } from "../../hooks/useFirestore";
+import { useAuthContext } from "../../hooks/useAuthContext";
+import { useNavigate } from "react-router-dom";
 
 const ProjectSummary = ({ project }) => {
+  const { deleteDocument } = useFirestore("projects");
+  const { user } = useAuthContext();
+  const navigate = useNavigate();
+
+  const handleClick = (e) => {
+    e.preventDefault();
+
+    try {
+      deleteDocument(project.id);
+      navigate("/");
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
   return (
     <div>
       <div className="project-summary">
         <h2 className="page-title">{project.name}</h2>
+        <p>By {project.createdBy.displayName}</p>
         <p className="due-date">
           Project Due By: {project.dueDate.toDate().toDateString()}
         </p>
@@ -19,6 +37,11 @@ const ProjectSummary = ({ project }) => {
           ))}
         </div>
       </div>
+      {user.uid === project.createdBy.id && (
+        <button className="btn" onClick={handleClick}>
+          Mark as complete
+        </button>
+      )}
     </div>
   );
 };
