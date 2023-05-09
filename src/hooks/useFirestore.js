@@ -76,8 +76,8 @@ export const useFirestore = (collectionName) => {
     const docRef = doc(db, collectionName, id);
     try {
       await deleteDoc(docRef);
-      return true;
       dispatchIfNotCancelled({ type: "DELETED_DOCUMENT" });
+      return true;
     } catch (err) {
       dispatchIfNotCancelled({ type: "ERROR", payload: "could not delete" });
       console.error("Error deleting document:", err);
